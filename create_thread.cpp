@@ -1,21 +1,19 @@
 #include <iostream>
+#include <thread>
 
-class A
-{};
-
-class B
+class background_task
 {
 public:
-    B(A a)
-        {}
-    B(B& other) = delete;
+  void operator() () const
+  {
+    std::cout << "background function object" << std::endl;
+  }
 };
-
-B b(A());
 
 #if defined(__MAIN__)
 int main(int argc, char* argv[])
 {
-    
+  std::thread my_thread{background_task()};
+  my_thread.join();
 }
 #endif

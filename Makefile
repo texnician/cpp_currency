@@ -9,8 +9,7 @@ $(shell test -d $(BINDIR) || mkdir $(BINDIR))
 
 .PHONY: all install clean distclean
 
-all:
-	@echo "Nothing to do"	
+all: $(SINGLE_BINS)
 
 install:
 	cp -f $(SINGLE_BINS) $(BINDIR)
