@@ -13,7 +13,9 @@ public:
 #if defined(__MAIN__)
 int main(int argc, char* argv[])
 {
-  std::thread my_thread{background_task()};
+  std::thread my_thread([](){
+      std::cout << "background lambda" << std::endl;
+    });
   my_thread.join();
 }
 #endif
