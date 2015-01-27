@@ -1,0 +1,4 @@
+bin/*
+*.o
+*.Tpo
+create_thread
