@@ -8,6 +8,10 @@ OBJS := $(patsubst %.cpp,%.o,$(SRCS))
 SINGLE_BINS := $(patsubst %.cpp,%,$(SRCS))
 DEBUG_SYMBOLS := $(patsubst %.cpp,%.dSYM,$(SRCS))
 
+DEP_DIR := .deps
+DEPS := $(addprefix $(DEP_DIR)/,$(subst .cpp,.Tpo,$(SRCS)))
+
+$(shell test -d $(DEP_DIR) || mkdir $(DEP_DIR))
 $(shell test -d $(BINDIR) || mkdir $(BINDIR))
 
 .PHONY: all install clean distclean
@@ -18,16 +22,18 @@ $(shell test -d $(BINDIR) || mkdir $(BINDIR))
 
 all: $(SINGLE_BINS)
 
+-include $(DEPS)
+
 install:
 	cp -f $(SINGLE_BINS) $(BINDIR)
 
 %: %.o
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -MD -MP -MF $(DEP_DIR)/$*.Tpo -o $@ $<
 	@dsymutil $@
 	@grep -xq "$@" .gitignore || echo $@ >> .gitignore
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -D__MAIN__ -g -o $@ -c $^
+	$(CXX) $(CXXFLAGS) -MD -MP -MF $(DEP_DIR)/$*.Tpo -D__MAIN__ -g -o $@ -c $<
 
 clean:
 	rm -f $(SINGLE_BINS)
@@ -36,3 +42,4 @@ clean:
 
 distclean: clean
 	rm -f $(BINDIR)/*
+	rm -f $(DEPS)

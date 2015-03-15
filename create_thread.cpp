@@ -18,6 +18,7 @@ int main(int argc, char* argv[])
   std::thread my_thread([&](){
       std::cout << "background lambda" << std::endl;
     });
+
   my_thread.join();
 }
 #endif

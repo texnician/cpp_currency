@@ -4,3 +4,4 @@ bin/*
 create_thread
 *.dSYM
 .clang
+deducing_types
