@@ -1,6 +1,7 @@
 CXX := g++
 CXXFLAGS += -std=c++11
-GCC_LIBRARY_PATH=/usr/local/Cellar/gcc49/4.9.2_1/lib/gcc/4.9
+GCC_LIBRARY_PATH ?= /usr/local/gcc49/lib64
+BOOST_PATH ?= $(HOME)/buildutil
 
 BINDIR := ./bin
 SRCS := $(wildcard *.cpp)
@@ -13,6 +14,11 @@ DEPS := $(addprefix $(DEP_DIR)/,$(subst .cpp,.Tpo,$(SRCS)))
 
 $(shell test -d $(DEP_DIR) || mkdir $(DEP_DIR))
 $(shell test -d $(BINDIR) || mkdir $(BINDIR))
+
+ifeq ($(shell uname -s),Linux)
+	CXXFLAGS += -I$(BOOST_PATH)/include
+	LDFLAGS += -Wl,rpath=$(GCC_LIBRARY_PATH)
+endif
 
 .PHONY: all install clean distclean
 
@@ -28,7 +34,7 @@ install:
 	cp -f $(SINGLE_BINS) $(BINDIR)
 
 %: %.o
-	$(CXX) $(CXXFLAGS) -MD -MP -MF $(DEP_DIR)/$*.Tpo -o $@ $<
+	$(CXX) $(LDFLAGS) -o $@ $<
 	@which dsymutil &> /dev/null ; if [ $$? -eq 0 ] ; then dsymutil $@ ; fi
 	@grep -xq "$@" .gitignore || echo $@ >> .gitignore
 
