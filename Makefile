@@ -17,7 +17,7 @@ $(shell test -d $(BINDIR) || mkdir $(BINDIR))
 
 ifeq ($(shell uname -s),Linux)
 	CXXFLAGS += -I$(BOOST_PATH)/include
-	LDFLAGS += -Wl,rpath=$(GCC_LIBRARY_PATH)
+	LDFLAGS += -Wl,-rpath=$(GCC_LIBRARY_PATH)
 endif
 
 .PHONY: all install clean distclean
