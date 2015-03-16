@@ -1,5 +1,5 @@
 CXX := g++
-CXXFLAGS += -std=c++11
+CXXFLAGS += -std=c++11 -pthread
 GCC_LIBRARY_PATH ?= /usr/local/gcc49/lib64
 BOOST_PATH ?= $(HOME)/buildutil
 
@@ -17,7 +17,7 @@ $(shell test -d $(BINDIR) || mkdir $(BINDIR))
 
 ifeq ($(shell uname -s),Linux)
 	CXXFLAGS += -I$(BOOST_PATH)/include
-	LDFLAGS += -Wl,-rpath=$(GCC_LIBRARY_PATH)
+	LDFLAGS += -Wl,-rpath=$(GCC_LIBRARY_PATH) -pthread
 endif
 
 .PHONY: all install clean distclean
@@ -34,7 +34,7 @@ install:
 	cp -f $(SINGLE_BINS) $(BINDIR)
 
 %: %.o
-	$(CXX) $(LDFLAGS) -o $@ $<
+	$(CXX) -o $@ $< $(LDFLAGS)
 	@which dsymutil &> /dev/null ; if [ $$? -eq 0 ] ; then dsymutil $@ ; fi
 	@grep -xq "$@" .gitignore || echo $@ >> .gitignore
 
