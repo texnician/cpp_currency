@@ -142,7 +142,7 @@ std::string value_type(T&& val)
   return type_id_with_cvr<decltype(val)>().pretty_name();
 }
 
-#define PRINT_TYPE(expr) cout << #expr << " => [" \
+#define DEDUCE_AUTO_TYPE(expr) cout << #expr << " => [" \
   << type_id_with_cvr<decltype(expr)>().pretty_name() \
   << "]\n";
 
@@ -157,18 +157,24 @@ void auto_deduce()
   auto&& uref3 = 27;
   auto x1 = 27; 
   auto x2(27); 
-  auto x3 = { 27 }; 
+  auto x3 = { 27 };
   auto x4{ 27 };
-  PRINT_TYPE(x);
-  PRINT_TYPE(cx);
-  PRINT_TYPE(rx);
-  PRINT_TYPE(uref1);
-  PRINT_TYPE(uref2);
-  PRINT_TYPE(uref3);
-  PRINT_TYPE(x1);
-  PRINT_TYPE(x2);
-  PRINT_TYPE(x3);
-  PRINT_TYPE(x4);
+  int x5 = { 27 };
+  int x6{ 27 };
+  DEDUCE_AUTO_TYPE(x);
+  DEDUCE_AUTO_TYPE(cx);
+  DEDUCE_AUTO_TYPE(rx);
+  DEDUCE_AUTO_TYPE(uref1);
+  DEDUCE_AUTO_TYPE(uref2);
+  DEDUCE_AUTO_TYPE(uref3);
+  DEDUCE_AUTO_TYPE(x1);
+  DEDUCE_TL_TYPE(byval, x1);
+  DEDUCE_AUTO_TYPE(x2);
+  DEDUCE_TL_TYPE(byval, x2);
+  DEDUCE_AUTO_TYPE(x3);
+  DEDUCE_AUTO_TYPE(x4);
+  DEDUCE_TL_TYPE(byval, x5);
+  DEDUCE_TL_TYPE(byval, x6);
   std::cout << std::endl;
 }
 
