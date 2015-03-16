@@ -1,5 +1,5 @@
 CXX := g++
-CXXFLAGS += -std=c++11 -arch x86_64
+CXXFLAGS += -std=c++11
 GCC_LIBRARY_PATH=/usr/local/Cellar/gcc49/4.9.2_1/lib/gcc/4.9
 
 BINDIR := ./bin
@@ -29,7 +29,7 @@ install:
 
 %: %.o
 	$(CXX) $(CXXFLAGS) -MD -MP -MF $(DEP_DIR)/$*.Tpo -o $@ $<
-	@dsymutil $@
+	@which dsymutil &> /dev/null ; if [ $$? -eq 0 ] ; then dsymutil $@ ; fi
 	@grep -xq "$@" .gitignore || echo $@ >> .gitignore
 
 %.o: %.cpp
