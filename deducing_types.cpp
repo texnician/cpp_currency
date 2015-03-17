@@ -1,7 +1,5 @@
-#include <iostream>
-#include <boost/type_index.hpp>
+#include "util.h"
 
-using boost::typeindex::type_id_with_cvr;
 using std::cout;
 
 #define DEDUCE_TL_TYPE(tl, expr) \
@@ -60,7 +58,6 @@ void byval(T param)
 // Case1: 参数是引用或者指针
 // 1. 如果expr是引用，忽略引用
 // 2. 用expr匹配param，根据param推导T的类型
-
 void case1()
 {
   std::cout << "Case1: param type is reference or pointer\n";

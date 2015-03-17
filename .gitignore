@@ -5,3 +5,4 @@ create_thread
 *.dSYM
 .clang
 deducing_types
+auto_type
