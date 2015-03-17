@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <memory>
 
 static std::vector<bool> get_flags(const Creative& cr)
 {
