@@ -7,3 +7,4 @@ create_thread
 deducing_types
 auto_type
 noexcept
+constness

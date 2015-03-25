@@ -19,7 +19,7 @@ void f_emptythrow() throw() {
 
 #if defined(__MAIN__)
 int main(int argc, char* argv[]) {
-   f_noexcept();
+    f_noexcept();
    // f_emptythrow();
 }
 #endif
