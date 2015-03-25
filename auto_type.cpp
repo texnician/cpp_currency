@@ -78,5 +78,7 @@ int main(int argc, char* argv[])
     process_creative(disabled, cr);
     PRINT_TYPE(disabled);
   }
+  PRINT_TYPE(NULL);
+  PRINT_TYPE(nullptr);
 }
 #endif
