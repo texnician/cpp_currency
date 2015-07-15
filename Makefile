@@ -13,11 +13,17 @@ DEP_DIR := .deps
 DEPS := $(addprefix $(DEP_DIR)/,$(subst .cpp,.Tpo,$(SRCS)))
 
 $(shell test -d $(DEP_DIR) || mkdir $(DEP_DIR))
+$(shell test -d $(DEP_DIR) || mkdir $(DEP_DIR))
 $(shell test -d $(BINDIR) || mkdir $(BINDIR))
+
+LIBS := folly krb5 gssapi_krb5 boost_thread boost_context \
+		double-conversion event ssl crypto rt sasl2 numa snappy gflags glog
+
+LINK_FLAGS = $(addprefix -l,$(LIBS))
 
 ifeq ($(shell uname -s),Linux)
 	CXXFLAGS += -I$(BOOST_PATH)/include
-	LDFLAGS += -Wl,-rpath=$(GCC_LIBRARY_PATH) -pthread
+	LDFLAGS += -Wl,-rpath=$(GCC_LIBRARY_PATH) -pthread -L$(BOOST_PATH)/lib $(LINK_FLAGS)
 endif
 
 .PHONY: all install clean distclean
