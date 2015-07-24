@@ -9,3 +9,4 @@ auto_type
 noexcept
 constness
 fbfuture
+functor

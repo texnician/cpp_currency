@@ -97,7 +97,7 @@ class ISearchService {
       CandidateResult cand;
       cand.result = Result::SUCCESS;
       cand.candidates = { "image", "flash" };
-      return folly::makeFuture(std::move(cand));
+      return folly::makeFuture(std::move(cand)).delayed(std::chrono::milliseconds(1000));
     }
 };
 
@@ -132,8 +132,21 @@ int main(int argc, char* argv[])
       // get cookie labels, make isearch info
       ISearchInfo info;
       info.labels = cl.labels;
-      return folly::collectAll(isv_root->getKwCandidate(info), 
-                               isv->getCandidate(info));
+      auto kw_fut = isv_root->getKwCandidate(info).onTimeout(
+        std::chrono::milliseconds(20), [] {
+          std::cout << "get keyword candidate timeout" << std::endl;
+          CandidateResult cand;
+          cand.result = Result::TIMEOUT;
+          return cand;
+        });
+      auto normal_fut = isv->getCandidate(info).onTimeout(
+        std::chrono::milliseconds(20), [] {
+          std::cout << "get normal candidate timeout" << std::endl;
+          CandidateResult cand;
+          cand.result = Result::TIMEOUT;
+          return cand;
+        });
+      return folly::collectAll(kw_fut, normal_fut);
     });
 
   using CandiateTuple = decltype(fut3)::value_type;
@@ -145,4 +158,24 @@ int main(int argc, char* argv[])
       std::cout << "normal candidates: " << normals.size() << std::endl;
       // send response
     });
+
+  // This version will throw the exception twice
+  folly::makeFuture()
+    .then([]{
+        throw std::runtime_error("ex1");
+      });
+    // .onError([](const std::runtime_error& e){
+    //     // ...
+    //     std::cout << "ex: " << e.what() << std::endl;
+    //   });
+  // This version won't throw at all!
+  folly::makeFuture()
+    .then([]{
+        // This will properly wrap the exception
+        return makeFuture<Unit>(std::runtime_error("ex2"));
+      })
+    .onError([](const std::runtime_error& e){
+        std::cout << "ex: " << e.what() << std::endl;
+        // ...
+      });
 }
