@@ -14,6 +14,20 @@ int oldcb(const char* key, const char* value, int len)
   return 0;
 }
 
+class A
+{
+public:
+  static void foo()
+    {
+      cbtype f;
+      f = [](const char* key, const char* value, int len) {
+          std::cout << "calss A lambda cb: " << "key: " << key << " value: " << value << std::endl;
+          return 0;
+      };
+      get_value("789", f);
+    }
+};
+
 #if defined(__MAIN__)
 int main(int argc, char* argv[])
 {

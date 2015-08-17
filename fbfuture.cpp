@@ -42,7 +42,7 @@ class AerospikeClient {
       CookieMapping cm;
       cm.result = Result::SUCCESS;
       cm.mvid = "abcdefgh";
-      return folly::makeFuture(std::move(cm));
+      return folly::makeFuture(std::move(cm)).delayed(std::chrono::seconds(3));
     }
 
   folly::Future<CookieLabel> getCookieLabel(std::string mvid)
@@ -79,7 +79,7 @@ class ISearchRootService {
       CandidateResult cand;
       cand.result = Result::SUCCESS;
       cand.candidates = { "hello", "world" };
-      return folly::makeFuture(std::move(cand));
+      return folly::makeFuture(std::move(cand)).delayed(std::chrono::milliseconds(40));
     }
 };
 
@@ -97,7 +97,7 @@ class ISearchService {
       CandidateResult cand;
       cand.result = Result::SUCCESS;
       cand.candidates = { "image", "flash" };
-      return folly::makeFuture(std::move(cand)).delayed(std::chrono::milliseconds(1000));
+      return folly::makeFuture(std::move(cand));
     }
 };
 
@@ -121,43 +121,48 @@ int main(int argc, char* argv[])
 
   std::string tid = "12345";
 
-  Future<CookieMapping> fut1 = as->getCookieMapping(tid);
+  {
+    Future<CookieMapping> fut1 = as->getCookieMapping(tid);
 
-  folly::Future<CookieLabel> fut2 = fut1.then([as](CookieMapping cm) {
-      std::string mvid = cm.result == Result::SUCCESS ? cm.mvid : "";
-      return as->getCookieLabel(mvid);
-    }); 
+    folly::Future<CookieLabel> fut2 = fut1.then([as](CookieMapping cm) {
+        std::string mvid = cm.result == Result::SUCCESS ? cm.mvid : "";
+        return as->getCookieLabel(mvid);
+      }); 
 
-  auto fut3 = fut2.then([isv_root, isv](CookieLabel cl) {
-      // get cookie labels, make isearch info
-      ISearchInfo info;
-      info.labels = cl.labels;
-      auto kw_fut = isv_root->getKwCandidate(info).onTimeout(
-        std::chrono::milliseconds(20), [] {
-          std::cout << "get keyword candidate timeout" << std::endl;
-          CandidateResult cand;
-          cand.result = Result::TIMEOUT;
-          return cand;
-        });
-      auto normal_fut = isv->getCandidate(info).onTimeout(
-        std::chrono::milliseconds(20), [] {
-          std::cout << "get normal candidate timeout" << std::endl;
-          CandidateResult cand;
-          cand.result = Result::TIMEOUT;
-          return cand;
-        });
-      return folly::collectAll(kw_fut, normal_fut);
-    });
+    auto fut3 = fut2.then([isv_root, isv](CookieLabel cl) {
+        // get cookie labels, make isearch info
+        ISearchInfo info;
+        info.labels = cl.labels;
+        auto kw_fut = isv_root->getKwCandidate(info).onTimeout(
+          std::chrono::milliseconds(20), [] {
+            std::cout << "get keyword candidate timeout" << std::endl;
+            CandidateResult cand;
+            cand.result = Result::TIMEOUT;
+            return cand;
+          });
+        auto normal_fut = isv->getCandidate(info).onTimeout(
+          std::chrono::milliseconds(20), [] {
+            std::cout << "get normal candidate timeout" << std::endl;
+            CandidateResult cand;
+            cand.result = Result::TIMEOUT;
+            return cand;
+          });
+        return folly::collectAll(kw_fut, normal_fut);
+      });
 
-  using CandiateTuple = decltype(fut3)::value_type;
+    using CandiateTuple = decltype(fut3)::value_type;
 
-  fut3.then([](CandiateTuple cands) {
-      std::vector<std::string> kws = std::get<0>(cands).value().candidates;
-      std::vector<std::string> normals = std::get<1>(cands).value().candidates;
-      std::cout << "keyword candidates: " << kws.size() << std::endl;
-      std::cout << "normal candidates: " << normals.size() << std::endl;
-      // send response
-    });
+    fut3.then([](CandiateTuple cands) {
+        std::vector<std::string> kws = std::get<0>(cands).value().candidates;
+        std::vector<std::string> normals = std::get<1>(cands).value().candidates;
+        std::cout << "keyword candidates: " << kws.size() << std::endl;
+        std::cout << "normal candidates: " << normals.size() << std::endl;
+        // send response
+        return "send response";
+      });
+  }
+
+  sleep(5);
 
   // This version will throw the exception twice
   folly::makeFuture()
